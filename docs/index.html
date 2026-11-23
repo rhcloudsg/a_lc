@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A股选股报告</title>
+<style>
+:root { color-scheme: light; --bg:#f4f6fa; --panel:#fff; --text:#202938; --muted:#667085; --line:#e4e7ec; --accent:#2563eb; }
+* { box-sizing:border-box; }
+body { margin:0; padding:24px; background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif; }
+.container { max-width:1600px; margin:0 auto; }
+h1 { margin:0 0 8px; font-size:28px; }
+.subtitle { color:var(--muted); font-size:14px; line-height:1.8; }
+.summary { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; margin:20px 0; }
+.card,.panel { background:var(--panel); border:1px solid var(--line); border-radius:12px; }
+.card { padding:20px; }
+.card-label { color:var(--muted); font-size:13px; }
+.card-value { margin-top:8px; font-size:25px; font-weight:700; }
+.panel { padding:20px; }
+.toolbar { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; }
+input { width:min(100%,360px); padding:10px 12px; border:1px solid #d0d5dd; border-radius:8px; font-size:14px; }
+.table-wrap { width:100%; overflow-x:auto; }
+.stock-table { width:100%; border-collapse:collapse; white-space:nowrap; font-size:13px; }
+.stock-table th,.stock-table td { padding:12px 14px; border-bottom:1px solid var(--line); text-align:left; }
+.stock-table th { position:sticky; top:0; background:#f8fafc; cursor:pointer; user-select:none; }
+.stock-table th:hover { color:var(--accent); }
+.stock-table tbody tr:hover { background:#f8fafc; }
+.note { margin-top:18px; color:var(--muted); font-size:12px; line-height:1.8; }
+@media(max-width:700px) { body{padding:12px} h1{font-size:22px} .summary{grid-template-columns:1fr;gap:10px} .card,.panel{padding:14px} }
+</style>
+</head>
+<body>
+<div class="container">
+<header>
+<h1>A股选股报告</h1>
+<div class="subtitle">报告生成时间：2026-11-23 20:15:01<br>最新行情日期：暂无候选</div>
+</header>
+<section class="summary">
+<div class="card"><div class="card-label">候选股票数量</div><div class="card-value">0</div></div>
+<div class="card"><div class="card-label">250日区间位置</div><div class="card-value">严格低于 50%</div></div>
+<div class="card"><div class="card-label">最低连续真阳线</div><div class="card-value">3 根</div></div>
+</section>
+<section class="panel">
+<div class="toolbar"><h2 style="margin:0;font-size:18px">候选股票明细</h2>
+<input id="searchInput" type="search" placeholder="搜索股票代码或名称..." aria-label="搜索股票代码或名称"></div>
+<div class="table-wrap"><table class="dataframe stock-table" id="stockTable">
+  <thead>
+    <tr style="text-align: right;">
+      <th>代码</th>
+      <th>名称</th>
+      <th>最新交易日</th>
+      <th>最新收盘价</th>
+      <th>连续真阳线数量</th>
+      <th>连续阳线起始日</th>
+      <th>启动日</th>
+      <th>启动日涨幅_pct</th>
+      <th>启动日成交量</th>
+      <th>启动日理论涨停价</th>
+      <th>启动日后最低价</th>
+      <th>跳空日</th>
+      <th>缺口下沿</th>
+      <th>缺口上沿</th>
+      <th>缺口确认完成日</th>
+      <th>250日最低价</th>
+      <th>250日最高价</th>
+      <th>250日区间位置_pct</th>
+    </tr>
+  </thead>
+  <tbody>
+  </tbody>
+</table></div>
+<div class="note">
+价格区间位置 = (当前收盘价 - 近250日最低价) / (近250日最高价 - 近250日最低价) × 100%。<br>
+启动日理论涨停价为估算值，不代表历史交易所实际涨停价。疑似除权除息识别为启发式过滤，不能保证识别全部公司行为。报告仅供研究参考，不构成投资建议。
+</div>
+</section>
+</div>
+<script>
+(function() {
+ const input=document.getElementById("searchInput");
+ const table=document.getElementById("stockTable");
+ if(!input||!table) return;
+ const tbody=table.tBodies[0];
+ input.addEventListener("input",function() {
+   const q=input.value.trim().toLowerCase();
+   Array.from(tbody.rows).forEach(row=>row.style.display=row.textContent.toLowerCase().includes(q)?"":"none");
+ });
+ Array.from(table.tHead.rows[0].cells).forEach((th,index)=>{
+   let asc=true; th.title="点击排序";
+   th.addEventListener("click",function() {
+     const rows=Array.from(tbody.rows);
+     rows.sort((a,b)=>{
+       const x=a.cells[index].textContent.trim(), y=b.cells[index].textContent.trim();
+       const nx=Number(x), ny=Number(y);
+       const result=(x!==""&&y!==""&&Number.isFinite(nx)&&Number.isFinite(ny))
+         ? nx-ny : x.localeCompare(y,"zh-CN",{numeric:true});
+       return asc?result:-result;
+     });
+     rows.forEach(row=>tbody.appendChild(row)); asc=!asc;
+   });
+ });
+})();
+</script>
+</body>
+</html>
